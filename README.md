@@ -44,7 +44,8 @@ Once installed, you can use KubeKit to enhance your Kubernetes workflow:
 For more information on KubeKit usage, refer to run `kc -h` and `kn -h` for help.
 
 ## Reference
-For more detailed installation instructions, you can also refer to the [official Kubernetes documentation](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/).
+- [Official Kubernetes documentation](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
+- [kubectx](https://github.com/ahmetb/kubectx)
 
 ## Contributing
 
