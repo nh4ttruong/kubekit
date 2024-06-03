@@ -16,7 +16,7 @@ To install KubeKit, follow these steps:
 ```bash
 curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash
 ```
-2. Install `kubectl` with `kc` and `kn` environment operations:
+2. Install `kubectl` with `kc` (context) and `kn` (namespace) aliases operations:
 ```bash
 curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- -a
 ```
