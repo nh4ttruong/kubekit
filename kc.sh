@@ -1,6 +1,7 @@
 #!/bin/bash
 
 GREEN=$(tput setaf 2)
+BLUE=$(tput setaf 4)
 RED=$(tput setaf 1)
 RESET=$(tput sgr0)
 
@@ -42,7 +43,7 @@ list_contexts() {
 
 switch_context() {
     if kubectl config use-context "$1" &> /dev/null; then
-        echo "${BLUE}[+] Switched to context: ${RESET}${GREEN}${1}${RESET}"
+        echo "[+] Switched to context: ${GREEN}${1}${RESET}"
     else
         echo "${RED}ERROR: ${RESET}Failed to switch context to ${RED}$1${RESET}" >&2
     fi
