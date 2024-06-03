@@ -33,7 +33,7 @@ list_contexts() {
     else
         current_context_line_number=$(echo "$all_contexts" | grep -n -w "$current_context" | cut -d':' -f1)
         if [ -n "$current_context_line_number" ]; then
-            echo "${BLUE}[+] Current context: ${RESET}${GREEN}${current_context}${RESET}"
+            echo "[+] Current context: ${GREEN}${current_context}${RESET}"
         else
             echo "$all_contexts"
             echo "${RED}ERROR: ${RESET}Current context '$current_context' is not in the list of contexts."
