@@ -30,7 +30,7 @@ check_kubectl_installed() {
         echo "${BLUE}INFO: ${RESET}kubectl is not installed."
         return 0
     else
-        echo "${BLUE}INFO: ${RESET}kubectl is already installed."
+        echo "${BLUE}INFO: ${RESET}kubectl is already installed. Run 'kubectl version --output=yaml' for more information."
         return 1
     fi
 }
