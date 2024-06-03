@@ -33,6 +33,7 @@ list_contexts() {
     else
         current_context_line_number=$(echo "$all_contexts" | grep -n -w "$current_context" | cut -d':' -f1)
         if [ -n "$current_context_line_number" ]; then
+            echo "$all_contexts" | sed "$current_context_line_number s/.*/${GREEN}&${RESET}/"
             echo "[+] Current context: ${GREEN}${current_context}${RESET}"
         else
             echo "$all_contexts"
