@@ -33,7 +33,7 @@ list_namespaces() {
     else
         current_namespace_line_number=$(echo "$all_namespaces" | grep -n -w "$current_namespace" | cut -d':' -f1)
         if [ -n "$current_namespace_line_number" ]; then
-            echo "${BLUE}[+] Current namespace: ${RESET}${GREEN}${current_namespace}${RESET}"
+            echo "[+] Current namespace: ${GREEN}${current_namespace}${RESET}"
         else
             echo "$all_namespaces"
             echo "${RED}ERROR: ${RESET}Current namespace '$current_namespace' is not in the list of namespaces."
