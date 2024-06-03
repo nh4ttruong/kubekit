@@ -12,14 +12,19 @@ KubeKit is your all-in-one Kubernetes CLI management tool. Install and manage `k
 
 To install KubeKit, follow these steps:
 
-1. Command install:
+1. Install `kubectl` only:
 ```bash
 curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | bash
 ```
-3. From repository:
+2. Install `kubectl` with `kc` and `kn` environment operations:
+```bash
+curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | bash -s -- -a
+```
+3. Manual install from repository:
 ```bash
 git clone https://github.com/nh4ttruong/kubekit.git
-cd kubekit && bash ./install.sh
+cd kubekit
+bash ./install.sh -a
 ```
 
 The `-a` or `--alias` option is optional and allows you to install quick aliases for context `kc` and namespace `kn` operations.
@@ -29,11 +34,9 @@ The `-a` or `--alias` option is optional and allows you to install quick aliases
 Once installed, you can use KubeKit to enhance your Kubernetes workflow:
 
 - Use `k` as short version of `kubectl`:
-
 - Use `kc` to manage Kubernetes contexts:
   - `kc`: List available contexts
   - `kc <context-name>`: Switch to the specified context
-
 - Use `kn` to manage Kubernetes namespaces:
   - `kn`: List available namespaces
   - `kn <namespace-name>`: Switch to the specified namespace
@@ -45,12 +48,11 @@ For more detailed installation instructions, you can also refer to the [official
 
 ## Contributing
 
-Contributions are welcome! If you have any suggestions, feature requests, or bug reports, please [open an issue](<repository-url>/issues) or submit a pull request.
+Contributions are welcome! If you have any suggestions, feature requests, or bug reports, please [open an issue](https://github.com/nh4ttruong/kubekit/issues) or submit a pull request.
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
 
 ---
-
-@nh4ttruong
+[@nh4ttruong](https://github.com/nh4ttruong)
