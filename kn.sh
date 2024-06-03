@@ -5,7 +5,7 @@ BLUE=$(tput setaf 4)
 RED=$(tput setaf 1)
 RESET=$(tput sgr0)
 
-print_usage() {
+usage() {
     echo "Usage: kn [namespace]"
     echo "       kn -l"
     echo "       kn -h"
@@ -43,7 +43,8 @@ list_namespaces() {
 
 switch_namespace() {
     if kubectl get ns "$1" &> /dev/null; then
-        kubectl config set-context --current --namespace="$1" > /dev/null 2>&1 && echo "${BLUE}INFO: ${RESET}Current namespace switched to \"${GREEN}$1${RESET}\""
+        kubectl config set-context --current --namespace="$1" > /dev/null 2>&1
+        echo "${BLUE}[+] Switched to namespace: ${RESET}${GREEN}${1}${RESET}"
     else
         echo "${RED}ERROR: ${RESET}No namespace exists with the name ${RED}\"$1\"${RESET}"
     fi
