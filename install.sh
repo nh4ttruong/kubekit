@@ -113,7 +113,8 @@ install_kc_kn() {
         curl -sL "https://github.com/nh4ttruong/kubekit/raw/main/kc.sh" -o kc.sh
         curl -sL "https://github.com/nh4ttruong/kubekit/raw/main/kn.sh" -o kn.sh
         chmod +x kc.sh kn.sh
-        sudo cp -f kc.sh kn.sh /usr/local/bin/
+        sudo mv kc.sh /usr/local/bin/kc
+        sudo mv kn.sh /usr/local/bin/kn
     fi
 }
 
