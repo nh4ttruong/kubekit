@@ -23,28 +23,26 @@ check_kubectl() {
 }
 
 list_contexts() {
-    contexts_command_output=$(kubectl config get-contexts)
-    all_contexts=$(echo "$contexts_command_output" | awk '{print $2}' | sed 1d)
+    all_contexts=$(kubectl config get-contexts | sed 1d | awk '{print $2}')
     current_context=$(kubectl config current-context)
 
-    # only print available contexts when there are not empty
-    if [ -z "$all_contexts" ]; then
-        echo "${RED}ERROR: ${RESET}No contexts available." >&2
-        exit 1
-    fi
-
-    while IFS= read -r context; do
-        if [ "$context" == "$current_context" ]; then
-            echo "${GREEN}$context${RESET}"
+    if [ -z "$current_context" ]; then
+        echo "${BLUE}INFO: ${RESET}Current context is not set. Set using 'kc <context>'."
+        echo "$all_contexts"
+    else
+        current_context_line_number=$(echo "$all_contexts" | grep -n -w "$current_context" | cut -d':' -f1)
+        if [ -n "$current_context_line_number" ]; then
+            echo "${BLUE}[+] Current context: ${RESET}${GREEN}${current_context}${RESET}"
         else
-            echo "$context"
+            echo "$all_contexts"
+            echo "${RED}ERROR: ${RESET}Current context '$current_context' is not in the list of contexts."
         fi
-    done <<< "$all_contexts"
+    fi
 }
 
 switch_context() {
     if kubectl config use-context "$1" &> /dev/null; then
-        echo "Switched to context: $1"
+        echo "${BLUE}[+] Switched to context: ${RESET}${GREEN}${1}${RESET}"
     else
         echo "${RED}ERROR: ${RESET}Failed to switch context to ${RED}$1${RESET}" >&2
     fi
