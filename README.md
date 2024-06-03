@@ -1,6 +1,6 @@
 # KubeKit - Fast Kubernetes CLI operations
 
-KubeKit is your all-in-one Kubernetes CLI management tool. Install and manage `kubectl` effortlessly, enjoy intelligent auto-completion with **<TAB>**, and set up quick aliases for rapid context and namespace operations.
+Optimize and keep your time with Kubernetes CLI management tool on your environment. Install and manage `kubectl` effortlessly, enjoy intelligent auto-completion with **<TAB>**, and set up quick aliases for rapid context and namespace operations.
 
 ## Features
 
