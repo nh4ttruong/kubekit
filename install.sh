@@ -77,7 +77,7 @@ install_kubectl_macos() {
     enable_autocompletion
 }
 
-install_kubectl_windows() {
+install_kubectl_wsl() {
     echo "${BLUE}INFO: ${RESET}Installing kubectl..."
     ARCH=$(uname -m)
     if [ "$ARCH" == "x86_64" ]; then
@@ -175,7 +175,7 @@ main() {
                 ;;
             MINGW*|CYGWIN*|MSYS*) 
                 echo "${BLUE}INFO: ${RESET}Please ensure you have bash-completion installed in your WSL environment."
-                install_kubectl_windows 
+                install_kubectl_wsl 
                 ;;
             *)          
                 echo "${RED}ERROR: ${RESET}Unsupported OS. Please install kubectl manually." 
