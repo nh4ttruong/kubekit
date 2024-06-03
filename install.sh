@@ -140,6 +140,21 @@ enable_autocompletion() {
     fi
 }
 
+enable_autocompletion() {
+    # Autocompletion setup for CURL method
+    if [[ "$SHELL" == *"bash"* ]]; then
+        echo "${BLUE}INFO: ${RESET}Configuring autocompletion for bash..."
+        echo 'source <(curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_bash_kc_kn)' >>~/.bashrc
+        source <(curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_bash_kc_kn)
+    elif [[ "$SHELL" == *"zsh"* ]]; then
+        echo "${BLUE}INFO: ${RESET}Configuring autocompletion for zsh..."
+        echo 'fpath=($fpath <(curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_zsh_kc_kn))' >>~/.zshrc
+        autoload -Uz compinit && compinit
+    else
+        echo "${RED}ERR: ${RESET}Unsupported shell. Please configure autocompletion manually."
+    fi
+}
+
 main() {
     INSTALL_KUBECTL=true
     INSTALL_KC_KN=false
@@ -185,6 +200,7 @@ main() {
 
     if [ "$INSTALL_KC_KN" = true ]; then
         install_kc_kn
+        enable_autocompletion
     fi
 }
 

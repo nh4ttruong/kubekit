@@ -1,0 +1,28 @@
+# _kc_kn bash completion
+
+_kc_kn() {
+    local cur prev words cword
+    _init_completion || return
+
+    local -a commands
+    commands=("kc" "kn")
+
+    if [[ $cword -eq 1 ]]; then
+        COMPREPLY=($(compgen -W "${commands[*]}" -- "$cur"))
+        return 0
+    fi
+
+    local command="${words[1]}"
+    case $command in
+        kc)
+            COMPREPLY=($(kubectl config get-contexts -o name | grep "^$cur"))
+            return 0
+            ;;
+        kn)
+            COMPREPLY=($(kubectl get ns -o name | cut -d'/' -f2 | grep "^$cur"))
+            return 0
+            ;;
+    esac
+}
+
+complete -F _kc_kn kc kn
