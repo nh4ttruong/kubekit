@@ -119,10 +119,25 @@ install_kc_kn() {
 }
 
 enable_autocompletion() {
-    echo 'source <(kubectl completion bash)' >>~/.bashrc
-    source <(kubectl completion bash)
-    echo 'alias k=kubectl' >>~/.bashrc
-    echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
+    if [[ "$SHELL" == *"zsh"* ]]; then
+        echo "${BLUE}INFO: ${RESET}Configuring autocompletion for zsh..."
+        if ! grep -q "autoload -Uz compinit" ~/.zshrc; then
+            echo 'autoload -Uz compinit' >>~/.zshrc
+            echo 'compinit' >>~/.zshrc
+        fi
+        echo 'source <(kubectl completion zsh)' >>~/.zshrc
+        source <(kubectl completion zsh)
+        echo 'alias k=kubectl' >>~/.zshrc
+        echo 'compdef __start_kubectl k' >>~/.zshrc
+    elif [[ "$SHELL" == *"bash"* ]]; then
+        echo "${BLUE}INFO: ${RESET}Configuring autocompletion for bash..."
+        echo 'source <(kubectl completion bash)' >>~/.bashrc
+        source <(kubectl completion bash)
+        echo 'alias k=kubectl' >>~/.bashrc
+        echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
+    else
+        echo "${RED}ERR: ${RESET}Unsupported shell. Please configure autocompletion manually."
+    fi
 }
 
 main() {
