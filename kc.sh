@@ -4,7 +4,7 @@ GREEN=$(tput setaf 2)
 RED=$(tput setaf 1)
 RESET=$(tput sgr0)
 
-print_usage() {
+usage() {
     echo "Usage: kc [context-name]"
     echo "       kc -l"
     echo "       kc -h"
@@ -52,7 +52,7 @@ main() {
     check_kubectl
 
     if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-        print_usage
+        usage
     elif [ "$1" == "-l" ] || [ "$1" == "--list" ]; then
         list_contexts
     elif [ -z "$1" ]; then
