@@ -1,0 +1,21 @@
+_kc() {
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="-l --list -h --help $(kubectl config get-contexts | sed 1d | awk '{print $2}')"
+
+    case "${prev}" in
+        -l|--list)
+            return 0
+            ;;
+        -h|--help)
+            return 0
+            ;;
+        *)
+            COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+            return 0
+            ;;
+    esac
+}
+complete -F _kc kc

@@ -144,14 +144,28 @@ enable_autocompletion() {
     # Autocompletion setup for CURL method
     if [[ "$SHELL" == *"bash"* ]]; then
         echo "${BLUE}INFO: ${RESET}Configuring autocompletion for bash..."
-        echo 'source <(curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_bash_kc_kn)' >>~/.bashrc
-        source <(curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_bash_kc_kn)
+        sudo curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_bash_kn -o /etc/bash_completion.d/_kn
+        sudo curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_bash_kc -o /etc/bash_completion.d/_kc
+        
+        # check if bash_completion is sourced in .bashrc
+        if ! grep -q "source /etc/bash_completion" ~/.bashrc; then
+            echo 'source /etc/bash_completion' >>~/.bashrc
+        fi
+        
+        source /etc/bash_completion
     elif [[ "$SHELL" == *"zsh"* ]]; then
         echo "${BLUE}INFO: ${RESET}Configuring autocompletion for zsh..."
-        echo 'fpath=($fpath <(curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_zsh_kc_kn))' >>~/.zshrc
+        sudo curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_zsh_kn -o /usr/local/share/zsh/site-functions/_kn
+        sudo curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_zsh_kc -o /usr/local/share/zsh/site-functions/_kc
+        
+        # check if fpath is set in .zshrc
+        if ! grep -q "fpath=($fpath /usr/local/share/zsh/site-functions)" ~/.zshrc; then
+            echo 'fpath=($fpath /usr/local/share/zsh/site-functions)' >>~/.zshrc
+        fi
+
         autoload -Uz compinit && compinit
     else
-        echo "${RED}ERR: ${RESET}Unsupported shell. Please configure autocompletion manually."
+        echo "${RED}ERROR: ${RESET}Unsupported shell. Please configure autocompletion manually."
     fi
 }
 

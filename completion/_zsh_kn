@@ -1,0 +1,21 @@
+#compdef kn
+
+_kn() {
+    local -a options commands
+    options=(
+        "-l:List all available namespaces"
+        "-h:Show help message"
+    )
+    commands=($(kubectl get ns | sed 1d | awk '{print $1}'))
+
+    _arguments \
+        ':namespace:__kn_commands' \
+        "$@" \
+        "${options[@]}"
+}
+
+__kn_commands() {
+    _describe 'namespace' commands
+}
+
+_kn "$@"
