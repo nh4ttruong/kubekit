@@ -14,11 +14,11 @@ To install KubeKit, follow these steps:
 
 1. Install `kubectl` only:
 ```bash
-curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | bash
+curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash
 ```
 2. Install `kubectl` with `kc` and `kn` environment operations:
 ```bash
-curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | bash -s -- -a
+curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- -a
 ```
 3. Manual install from repository:
 ```bash
