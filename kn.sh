@@ -44,7 +44,7 @@ list_namespaces() {
 switch_namespace() {
     if kubectl get ns "$1" &> /dev/null; then
         kubectl config set-context --current --namespace="$1" > /dev/null 2>&1
-        echo "${BLUE}[+] Switched to namespace: ${RESET}${GREEN}${1}${RESET}"
+        echo "[+] Switched to namespace: ${GREEN}${1}${RESET}"
     else
         echo "${RED}ERROR: ${RESET}No namespace exists with the name ${RED}\"$1\"${RESET}"
     fi
