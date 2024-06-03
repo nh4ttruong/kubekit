@@ -1,12 +1,12 @@
 # KubeKit - Fast Kubernetes CLI operations
 
-Optimize and keep your time with Kubernetes CLI management tool on your environment. Install and manage `kubectl` effortlessly, enjoy intelligent auto-completion with **<TAB>**, and set up quick aliases for rapid context and namespace operations.
+Managing Kubernetes clusters, contexts, and namespaces can be time-consuming. But fear not! I’ve got you covered with three KubeKit smart tools: `k`, `kc`, and `kn`. These tools will streamline your workflow and make your life easier.
 
 ## Features
 
-- **Easy Installation**: Install and manage `kubectl` as `k` command with your OS.
-- **Auto-Completion**: Enjoy auto-completion features that suggest commands and options as you type with **<TAB>**, saving you valuable time and minimizing errors.
-- **Aliases Operation**: Set up quick aliases for namespace `kn` and context `kc` handling, enabling smooth navigation within your Kubernetes environment.
+- `k` or `kubectl`: The official `kubectl` tool made by [Official Kubernetes](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/), you also could use `k` as its short version. They come with intelligent auto-completion! Just hit <TAB> to see the magic happen.
+- `kc`: Easily to switch between cluster contexts with a shorter alias `kc`. Type `kc` instead of the full command to get all contexts with current highlighting context. 
+- `kn`: Need to get all namepsaces or switch between cluster namespaces? No problem! `kn` is your fast lane.
 
 ## Installation
 
