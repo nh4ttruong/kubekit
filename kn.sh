@@ -54,7 +54,7 @@ main() {
     check_kubectl
 
     if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-        print_usage
+        usage
     elif [ "$1" == "-l" ] || [ "$1" == "--list" ]; then
         list_namespaces
     elif [ -z "$1" ]; then
