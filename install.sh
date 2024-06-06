@@ -120,51 +120,28 @@ install_kc_kn() {
 
 enable_kubectl_autocompletion() {
     install_bash_completion
-
     if [[ "$SHELL" == *"zsh"* ]]; then
         echo "${BLUE}INFO: ${RESET}Configuring kubectl autocompletion for zsh..."
-
         if ! grep -q "autoload -Uz compinit" ~/.zshrc; then
             echo 'autoload -Uz compinit' >>~/.zshrc
             echo 'compinit' >>~/.zshrc
         fi
-
-        if grep -q "alias k=kubectl" ~/.zshrc; then
-            sed -i '/alias k=kubectl/d' ~/.zshrc
-        fi
-
-        if grep -q "compdef __start_kubectl k" ~/.zshrc; then
-            sed -i '/compdef __start_kubectl k/d' ~/.zshrc
-        fi
-
         echo 'source <(kubectl completion zsh)' >>~/.zshrc
+        source <(kubectl completion zsh)
         echo 'alias k=kubectl' >>~/.zshrc
         echo 'compdef __start_kubectl k' >>~/.zshrc
-
         source ~/.zshrc
-
     elif [[ "$SHELL" == *"bash"* ]]; then
         echo "${BLUE}INFO: ${RESET}Configuring kubectl autocompletion for bash..."
-
-        if grep -q "alias k=kubectl" ~/.bashrc; then
-            sed -i '/alias k=kubectl/d' ~/.bashrc
-        fi
-
-        if grep -q "complete -o default -F __start_kubectl k" ~/.bashrc; then
-            sed -i '/complete -o default -F __start_kubectl k/d' ~/.bashrc
-        fi
-
         echo 'source <(kubectl completion bash)' >>~/.bashrc
+        source <(kubectl completion bash)
         echo 'alias k=kubectl' >>~/.bashrc
         echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
-
         source ~/.bashrc
-
     else
         echo "${RED}ERR: ${RESET}Unsupported shell. Please configure autocompletion manually."
     fi
 }
-
 
 enable_kc_kn_autocompletion() {
     # Autocompletion setup for CURL method
