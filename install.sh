@@ -118,34 +118,58 @@ install_kc_kn() {
     fi
 }
 
-enable_autocompletion() {
+enable_kubectl_autocompletion() {
+    install_bash_completion
+
     if [[ "$SHELL" == *"zsh"* ]]; then
-        echo "${BLUE}INFO: ${RESET}Configuring autocompletion for zsh..."
+        echo "${BLUE}INFO: ${RESET}Configuring kubectl autocompletion for zsh..."
+
         if ! grep -q "autoload -Uz compinit" ~/.zshrc; then
             echo 'autoload -Uz compinit' >>~/.zshrc
             echo 'compinit' >>~/.zshrc
         fi
+
+        if grep -q "alias k=kubectl" ~/.zshrc; then
+            sed -i '/alias k=kubectl/d' ~/.zshrc
+        fi
+
+        if grep -q "compdef __start_kubectl k" ~/.zshrc; then
+            sed -i '/compdef __start_kubectl k/d' ~/.zshrc
+        fi
+
         echo 'source <(kubectl completion zsh)' >>~/.zshrc
-        source <(kubectl completion zsh)
         echo 'alias k=kubectl' >>~/.zshrc
         echo 'compdef __start_kubectl k' >>~/.zshrc
+
         source ~/.zshrc
+
     elif [[ "$SHELL" == *"bash"* ]]; then
-        echo "${BLUE}INFO: ${RESET}Configuring autocompletion for bash..."
+        echo "${BLUE}INFO: ${RESET}Configuring kubectl autocompletion for bash..."
+
+        if grep -q "alias k=kubectl" ~/.bashrc; then
+            sed -i '/alias k=kubectl/d' ~/.bashrc
+        fi
+
+        if grep -q "complete -o default -F __start_kubectl k" ~/.bashrc; then
+            sed -i '/complete -o default -F __start_kubectl k/d' ~/.bashrc
+        fi
+
         echo 'source <(kubectl completion bash)' >>~/.bashrc
-        source <(kubectl completion bash)
         echo 'alias k=kubectl' >>~/.bashrc
         echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
+
         source ~/.bashrc
+
     else
         echo "${RED}ERR: ${RESET}Unsupported shell. Please configure autocompletion manually."
     fi
 }
 
-enable_autocompletion() {
+
+enable_kc_kn_autocompletion() {
     # Autocompletion setup for CURL method
     if [[ "$SHELL" == *"bash"* ]]; then
-        echo "${BLUE}INFO: ${RESET}Configuring autocompletion for bash..."
+        echo "${BLUE}INFO: ${RESET}Configuring kc & kn autocompletion for bash..."
         sudo curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_bash_kn -o /etc/bash_completion.d/_kn
         sudo curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_bash_kc -o /etc/bash_completion.d/_kc
         
@@ -154,9 +178,9 @@ enable_autocompletion() {
             echo 'source /etc/bash_completion' >>~/.bashrc
         fi
         
-        source /etc/bash_completion
+        source ~/.bashrc
     elif [[ "$SHELL" == *"zsh"* ]]; then
-        echo "${BLUE}INFO: ${RESET}Configuring autocompletion for zsh..."
+        echo "${BLUE}INFO: ${RESET}Configuring kc & kn autocompletion for zsh..."
         sudo curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_zsh_kn -o /usr/local/share/zsh/site-functions/_kn
         sudo curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_zsh_kc -o /usr/local/share/zsh/site-functions/_kc
         
@@ -166,6 +190,7 @@ enable_autocompletion() {
         fi
 
         autoload -Uz compinit && compinit
+        source ~/.zshrc
     else
         echo "${RED}ERROR: ${RESET}Unsupported shell. Please configure autocompletion manually."
     fi
@@ -198,11 +223,11 @@ main() {
         case "$(uname -s)" in
             Linux*)
                 install_kubectl_linux
-                install_bash_completion
+                enable_kubectl_autocompletion
                 ;;
             Darwin*)
                 install_kubectl_macos
-                install_bash_completion
+                enable_kubectl_autocompletion
                 ;;
             MINGW*|CYGWIN*|MSYS*) 
                 echo "${BLUE}INFO: ${RESET}Please ensure you have bash-completion installed in your WSL environment."
@@ -216,7 +241,7 @@ main() {
 
     if [ "$INSTALL_KC_KN" = true ]; then
         install_kc_kn
-        enable_autocompletion
+        enable_kc_kn_autocompletion
     fi
 }
 
