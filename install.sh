@@ -129,12 +129,14 @@ enable_autocompletion() {
         source <(kubectl completion zsh)
         echo 'alias k=kubectl' >>~/.zshrc
         echo 'compdef __start_kubectl k' >>~/.zshrc
+        source ~/.zshrc
     elif [[ "$SHELL" == *"bash"* ]]; then
         echo "${BLUE}INFO: ${RESET}Configuring autocompletion for bash..."
         echo 'source <(kubectl completion bash)' >>~/.bashrc
         source <(kubectl completion bash)
         echo 'alias k=kubectl' >>~/.bashrc
         echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
+        source ~/.bashrc
     else
         echo "${RED}ERR: ${RESET}Unsupported shell. Please configure autocompletion manually."
     fi
