@@ -52,8 +52,6 @@ install_kubectl_linux() {
     sudo mv kubectl /usr/local/bin/
 
     echo "${BLUE}INFO: ${RESET}Please ensure you have bash-completion installed in your Linux environment."
-
-    enable_autocompletion
 }
 
 install_kubectl_macos() {
@@ -73,8 +71,6 @@ install_kubectl_macos() {
     sudo mv kubectl /usr/local/bin/
 
     echo "${BLUE}INFO: ${RESET}Please ensure you have bash-completion installed in your macOS environment."
-
-    enable_autocompletion
 }
 
 install_kubectl_wsl() {
@@ -94,8 +90,6 @@ install_kubectl_wsl() {
     sudo mv kubectl.exe /usr/local/bin/
 
     echo "${BLUE}INFO: ${RESET}Please ensure you have bash-completion installed in your WSL environment."
-
-    enable_autocompletion
 }
 
 install_kc_kn() {
