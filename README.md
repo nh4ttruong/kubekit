@@ -1,4 +1,4 @@
-# KubeKit - Fast Kubernetes CLI operations
+# KubeKit - Fast Kubernetes Tools Installation & Operation
 
 Managing Kubernetes clusters, contexts, and namespaces can be time-consuming. But fear not! I’ve got you covered with KubeKit smart tools: `kubectl` (with `k` alias), `helm`, `kustomize`, `kc`, and `kn`. These tools will streamline your workflow and make your life easier.
 
