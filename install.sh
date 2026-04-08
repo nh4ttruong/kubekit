@@ -4,6 +4,8 @@ GREEN=$(tput setaf 2)
 BLUE=$(tput setaf 4)
 RED=$(tput setaf 1)
 RESET=$(tput sgr0)
+K_ALIAS_MODE_WITH_SHORT="with-short-alias"
+K_ALIAS_MODE_WITHOUT_SHORT="no-short-alias"
 
 SUDO=""
 if [ "$(id -u)" -ne 0 ]; then
@@ -219,7 +221,7 @@ configure_kubectl_short_alias_completion() {
 }
 
 enable_cli_autocompletion() {
-    local shell_rc shell_type alias_mode="${1:-with-short-alias}"
+    local shell_rc shell_type k_alias_mode="${1:-$K_ALIAS_MODE_WITH_SHORT}"
 
     if [[ "$SHELL" == *"zsh"* ]]; then
         shell_type="zsh"
@@ -239,7 +241,7 @@ enable_cli_autocompletion() {
     configure_tool_completion "$shell_rc" "$shell_type" kubectl
     configure_tool_completion "$shell_rc" "$shell_type" helm
     configure_tool_completion "$shell_rc" "$shell_type" kustomize
-    if [ "$alias_mode" = "with-short-alias" ]; then
+    if [ "$k_alias_mode" = "$K_ALIAS_MODE_WITH_SHORT" ]; then
         configure_kubectl_short_alias_completion "$shell_rc" "$shell_type"
     fi
 
@@ -346,7 +348,7 @@ main() {
     if [ "$install_aliases" = true ]; then
         enable_cli_autocompletion
     else
-        enable_cli_autocompletion "no-short-alias"
+        enable_cli_autocompletion "$K_ALIAS_MODE_WITHOUT_SHORT"
     fi
 
     if [ "$install_aliases" = true ]; then
