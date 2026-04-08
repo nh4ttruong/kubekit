@@ -4,8 +4,6 @@ GREEN=$(tput setaf 2)
 BLUE=$(tput setaf 4)
 RED=$(tput setaf 1)
 RESET=$(tput sgr0)
-K_KUBECTL_SHORT_ALIAS_ENABLED="with-short-alias"
-K_KUBECTL_SHORT_ALIAS_DISABLED="no-short-alias"
 
 SUDO=""
 if [ "$(id -u)" -ne 0 ]; then
@@ -221,7 +219,7 @@ configure_kubectl_short_alias_completion() {
 }
 
 enable_cli_autocompletion() {
-    local shell_rc shell_type k_alias_mode="${1:-$K_KUBECTL_SHORT_ALIAS_ENABLED}"
+    local shell_rc shell_type install_k_short_alias="${1:-true}"
 
     if [[ "$SHELL" == *"zsh"* ]]; then
         shell_type="zsh"
@@ -241,7 +239,7 @@ enable_cli_autocompletion() {
     configure_tool_completion "$shell_rc" "$shell_type" kubectl
     configure_tool_completion "$shell_rc" "$shell_type" helm
     configure_tool_completion "$shell_rc" "$shell_type" kustomize
-    if [ "$k_alias_mode" = "$K_KUBECTL_SHORT_ALIAS_ENABLED" ]; then
+    if [ "$install_k_short_alias" = true ]; then
         configure_kubectl_short_alias_completion "$shell_rc" "$shell_type"
     fi
 
@@ -311,7 +309,7 @@ usage() {
 Usage: ./install.sh [options]
 
 Options:
-  -a, --alias      Install aliases (default; option kept for backward compatibility)
+  -a, --alias      Install aliases (default behavior; flag retained for compatibility)
       --no-aliases Skip alias setup for kc/kn and kubectl short alias k
   -h, --help       Show this help message
 USAGE
@@ -348,7 +346,7 @@ main() {
     if [ "$install_aliases" = true ]; then
         enable_cli_autocompletion
     else
-        enable_cli_autocompletion "$K_KUBECTL_SHORT_ALIAS_DISABLED"
+        enable_cli_autocompletion false
     fi
 
     if [ "$install_aliases" = true ]; then
