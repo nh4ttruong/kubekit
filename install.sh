@@ -193,7 +193,7 @@ install_kustomize() {
         return
     fi
 
-    local os arch version kustomize_tag kustomize_archive tmp_dir
+    local os arch version kustomize_tag_prefix kustomize_tag kustomize_archive tmp_dir
     os=$(detect_os)
     arch=$(detect_arch)
 
@@ -209,7 +209,9 @@ install_kustomize() {
         exit 1
     fi
 
-    kustomize_tag="kustomize%2Fv${version}"
+    # Kustomize release tags are formatted as "kustomize/vX.Y.Z"; the slash must be URL-encoded.
+    kustomize_tag_prefix="kustomize%2Fv"
+    kustomize_tag="${kustomize_tag_prefix}${version}"
     kustomize_archive="kustomize_v${version}_${os}_${arch}.tar.gz"
 
     info "Installing kustomize ${version}..."
