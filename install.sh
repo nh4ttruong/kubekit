@@ -112,7 +112,7 @@ extract_json_tag_name() {
 
 validate_version() {
     local version="$1"
-    if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+    if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
         return 1
     fi
     return 0
@@ -127,8 +127,15 @@ install_kubectl() {
     os=$(detect_os)
     arch=$(detect_arch)
 
-    info "Installing kubectl..."
-    curl -fsSLO "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/${os}/${arch}/kubectl"
+    local stable_version
+    stable_version=$(curl -fsSL https://dl.k8s.io/release/stable.txt)
+    if [ -z "$stable_version" ]; then
+        error "Failed to determine latest kubectl version."
+        exit 1
+    fi
+
+    info "Installing kubectl ${stable_version}..."
+    curl -fsSLO "https://dl.k8s.io/release/${stable_version}/bin/${os}/${arch}/kubectl"
     chmod +x kubectl
     install_binary "./kubectl" "kubectl"
     rm -f kubectl
