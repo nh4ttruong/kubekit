@@ -119,7 +119,9 @@ validate_version() {
 }
 
 install_kubectl() {
-    if check_tool_installed kubectl; then
+    local force_update="${1:-false}"
+    local requested_version="${2:-}"
+    if [ "$force_update" != true ] && check_tool_installed kubectl; then
         return
     fi
 
@@ -128,10 +130,17 @@ install_kubectl() {
     arch=$(detect_arch)
 
     local stable_version
-    stable_version=$(curl -fsSL https://dl.k8s.io/release/stable.txt)
+    if [ -n "$requested_version" ]; then
+        stable_version="$requested_version"
+    else
+        stable_version=$(curl -fsSL https://dl.k8s.io/release/stable.txt)
+    fi
     if [ -z "$stable_version" ]; then
         error "Failed to determine latest kubectl version."
         exit 1
+    fi
+    if [[ "$stable_version" != v* ]]; then
+        stable_version="v${stable_version}"
     fi
 
     info "Installing kubectl ${stable_version}..."
@@ -142,7 +151,9 @@ install_kubectl() {
 }
 
 install_helm() {
-    if check_tool_installed helm; then
+    local force_update="${1:-false}"
+    local requested_version="${2:-}"
+    if [ "$force_update" != true ] && check_tool_installed helm; then
         return
     fi
 
@@ -150,8 +161,12 @@ install_helm() {
     os=$(detect_os)
     arch=$(detect_arch)
 
-    version=$(extract_json_tag_name "https://api.github.com/repos/helm/helm/releases/latest")
-    version=${version#v}
+    if [ -n "$requested_version" ]; then
+        version=${requested_version#v}
+    else
+        version=$(extract_json_tag_name "https://api.github.com/repos/helm/helm/releases/latest")
+        version=${version#v}
+    fi
     if [ -z "$version" ] || ! validate_version "$version"; then
         error "Failed to determine latest Helm version."
         exit 1
@@ -166,7 +181,9 @@ install_helm() {
 }
 
 install_kustomize() {
-    if check_tool_installed kustomize; then
+    local force_update="${1:-false}"
+    local requested_version="${2:-}"
+    if [ "$force_update" != true ] && check_tool_installed kustomize; then
         return
     fi
 
@@ -174,8 +191,12 @@ install_kustomize() {
     os=$(detect_os)
     arch=$(detect_arch)
 
-    version=$(extract_json_tag_name "https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest")
-    version=${version#kustomize/}
+    if [ -n "$requested_version" ]; then
+        version=${requested_version#v}
+    else
+        version=$(extract_json_tag_name "https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest")
+        version=${version#kustomize/}
+    fi
     if [ -z "$version" ] || ! validate_version "$version"; then
         error "Failed to determine latest Kustomize version."
         exit 1
@@ -310,6 +331,8 @@ Usage: ./install.sh [options]
 
 Options:
   -a, --alias      Install aliases (default behavior; flag retained for compatibility)
+  -u, --update TOOL Update one tool: kubectl|helm|kustomize|all
+      --version VERSION Version for --update (for single tool updates only)
       --no-aliases Skip alias setup for kc/kn and kubectl short alias k
       --no-kubectl Skip kubectl installation
       --no-helm    Skip helm installation
@@ -323,11 +346,38 @@ main() {
     local install_kubectl_tool=true
     local install_helm_tool=true
     local install_kustomize_tool=true
+    local update_tool=""
+    local requested_version=""
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -a|--alias)
                 install_aliases=true
+                shift
+                ;;
+            -u|--update)
+                if [ -z "${2:-}" ] || [[ "${2:-}" == -* ]]; then
+                    error "--update requires a tool name: kubectl|helm|kustomize|all"
+                    exit 1
+                fi
+                update_tool="$2"
+                shift 2
+                ;;
+            --update=*)
+                update_tool="${1#*=}"
+                shift
+                ;;
+            --version)
+                if [ -z "${2:-}" ] || [[ "${2:-}" == -* ]]; then
+                    error "--version requires a value (for example: 3.16.4)"
+                    exit 1
+                fi
+                requested_version="${2#v}"
+                shift 2
+                ;;
+            --version=*)
+                requested_version="${1#*=}"
+                requested_version="${requested_version#v}"
                 shift
                 ;;
             --no-aliases)
@@ -357,6 +407,39 @@ main() {
                 ;;
         esac
     done
+
+    if [ -n "$requested_version" ] && ! validate_version "$requested_version"; then
+        error "Invalid version format: ${requested_version}. Expected semantic version like 1.2.3"
+        exit 1
+    fi
+
+    if [ -n "$update_tool" ]; then
+        case "$update_tool" in
+            kubectl)
+                install_kubectl true "$requested_version"
+                ;;
+            helm)
+                install_helm true "$requested_version"
+                ;;
+            kustomize)
+                install_kustomize true "$requested_version"
+                ;;
+            all)
+                if [ -n "$requested_version" ]; then
+                    error "--version is only supported when updating a single tool."
+                    exit 1
+                fi
+                install_kubectl true
+                install_helm true
+                install_kustomize true
+                ;;
+            *)
+                error "Unknown tool for --update: ${update_tool}. Use kubectl|helm|kustomize|all."
+                exit 1
+                ;;
+        esac
+        exit 0
+    fi
 
     if [ "$install_kubectl_tool" = true ]; then
         install_kubectl

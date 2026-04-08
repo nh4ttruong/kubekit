@@ -49,6 +49,11 @@ git clone https://github.com/nh4ttruong/kubekit.git
 cd kubekit
 bash ./install.sh
 ```
+6. Update installed tools:
+```bash
+bash ./install.sh --update helm
+bash ./install.sh -u kubectl --version 1.32.2
+```
 
 The installer automatically installs missing `kubectl`, `helm`, and `kustomize` binaries on Linux/macOS and configures shell completion for them.  
 By default, aliases `k`, `kc`, and `kn` are installed with their completion setup.  
