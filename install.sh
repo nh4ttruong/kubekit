@@ -340,16 +340,38 @@ enable_kc_kn_autocompletion() {
 get_tool_version() {
     local tool="$1"
     local version=""
+    local raw=""
 
     case "$tool" in
         kubectl)
             version=$(kubectl version --client -o yaml 2>/dev/null | awk '/gitVersion:/ {print $2; exit}')
+            if [ -z "$version" ]; then
+                raw=$(kubectl version --client=true 2>/dev/null)
+                version=$(echo "$raw" | sed -n 's/.*GitVersion:"\([^"]*\)".*/\1/p' | head -n1)
+            fi
+            if [ -z "$version" ]; then
+                version=$(kubectl version --client --short 2>/dev/null | awk '{print $3}' | head -n1)
+            fi
             ;;
         helm)
-            version=$(helm version --short 2>/dev/null)
+            version=$(helm version --template='{{.Version}}' 2>/dev/null)
+            if [ -z "$version" ]; then
+                raw=$(helm version 2>/dev/null)
+                version=$(echo "$raw" | sed -n 's/.*Version:"\([^"]*\)".*/\1/p' | head -n1)
+            fi
+            if [ -z "$version" ]; then
+                version=$(helm version --short 2>/dev/null | head -n1)
+            fi
             ;;
         kustomize)
-            version=$(kustomize version 2>/dev/null | tr -d '{}')
+            version=$(kustomize version --short 2>/dev/null | head -n1)
+            if [ -z "$version" ]; then
+                raw=$(kustomize version 2>/dev/null | tr -d '{}')
+                version=$(echo "$raw" | sed -n 's/.*\(v[0-9][0-9A-Za-z.\-]*\).*/\1/p' | head -n1)
+            fi
+            if [ -z "$version" ]; then
+                version=$(kustomize version 2>/dev/null | awk '{print $1}' | head -n1)
+            fi
             ;;
         *)
             version="-"
