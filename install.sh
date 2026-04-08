@@ -118,6 +118,12 @@ validate_version() {
     return 0
 }
 
+normalize_version() {
+    local version="$1"
+    version="${version#v}"
+    echo "$version"
+}
+
 install_kubectl() {
     local force_update="${1:-false}"
     local requested_version="${2:-}"
@@ -162,10 +168,10 @@ install_helm() {
     arch=$(detect_arch)
 
     if [ -n "$requested_version" ]; then
-        version=${requested_version#v}
+        version="$requested_version"
     else
         version=$(extract_json_tag_name "https://api.github.com/repos/helm/helm/releases/latest")
-        version=${version#v}
+        version=$(normalize_version "$version")
     fi
     if [ -z "$version" ] || ! validate_version "$version"; then
         error "Failed to determine latest Helm version."
@@ -192,7 +198,7 @@ install_kustomize() {
     arch=$(detect_arch)
 
     if [ -n "$requested_version" ]; then
-        version=${requested_version#v}
+        version="$requested_version"
     else
         version=$(extract_json_tag_name "https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest")
         version=${version#kustomize/}
@@ -332,7 +338,7 @@ Usage: ./install.sh [options]
 Options:
   -a, --alias      Install aliases (default behavior; flag retained for compatibility)
   -u, --update TOOL Update one tool: kubectl|helm|kustomize|all
-      --version VERSION Version for --update (for single tool updates only)
+      --version VERSION Version for --update (single tool only, accepts 1.2.3 or v1.2.3)
       --no-aliases Skip alias setup for kc/kn and kubectl short alias k
       --no-kubectl Skip kubectl installation
       --no-helm    Skip helm installation
@@ -372,12 +378,11 @@ main() {
                     error "--version requires a value (for example: 3.16.4)"
                     exit 1
                 fi
-                requested_version="${2#v}"
+                requested_version="$2"
                 shift 2
                 ;;
             --version=*)
                 requested_version="${1#*=}"
-                requested_version="${requested_version#v}"
                 shift
                 ;;
             --no-aliases)
@@ -408,9 +413,12 @@ main() {
         esac
     done
 
-    if [ -n "$requested_version" ] && ! validate_version "$requested_version"; then
-        error "Invalid version format: ${requested_version}. Expected semantic version like 1.2.3"
-        exit 1
+    if [ -n "$requested_version" ]; then
+        requested_version=$(normalize_version "$requested_version")
+        if ! validate_version "$requested_version"; then
+            error "Invalid version format: ${requested_version}. Expected semantic version like 1.2.3"
+            exit 1
+        fi
     fi
 
     if [ -n "$update_tool" ]; then
@@ -426,7 +434,7 @@ main() {
                 ;;
             all)
                 if [ -n "$requested_version" ]; then
-                    error "--version is only supported when updating a single tool."
+                    error "--version cannot be used with --update all. Specify a single tool (kubectl, helm, or kustomize)."
                     exit 1
                 fi
                 install_kubectl true

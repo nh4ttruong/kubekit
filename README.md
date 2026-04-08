@@ -53,6 +53,7 @@ bash ./install.sh
 ```bash
 bash ./install.sh --update helm
 bash ./install.sh -u kubectl --version 1.32.2
+bash ./install.sh --update helm --version v3.18.0
 ```
 
 The installer automatically installs missing `kubectl`, `helm`, and `kustomize` binaries on Linux/macOS and configures shell completion for them.  
