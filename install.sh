@@ -5,225 +5,311 @@ BLUE=$(tput setaf 4)
 RED=$(tput setaf 1)
 RESET=$(tput sgr0)
 
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then
+    SUDO="sudo"
+fi
+
+info() {
+    echo "${BLUE}INFO: ${RESET}$1"
+}
+
+error() {
+    echo "${RED}ERROR: ${RESET}$1" >&2
+}
+
+append_if_missing() {
+    local line="$1"
+    local file="$2"
+
+    touch "$file"
+    if ! grep -Fqx "$line" "$file"; then
+        echo "$line" >> "$file"
+    fi
+}
+
+detect_os() {
+    case "$(uname -s)" in
+        Linux*)
+            echo "linux"
+            ;;
+        Darwin*)
+            echo "darwin"
+            ;;
+        *)
+            error "Unsupported OS: $(uname -s)"
+            exit 1
+            ;;
+    esac
+}
+
+detect_arch() {
+    case "$(uname -m)" in
+        x86_64|amd64)
+            echo "amd64"
+            ;;
+        aarch64|arm64)
+            echo "arm64"
+            ;;
+        *)
+            error "Unsupported architecture: $(uname -m)"
+            exit 1
+            ;;
+    esac
+}
+
 install_bash_completion() {
     if command -v apt-get &> /dev/null; then
         if ! dpkg -l | grep -q bash-completion; then
-            sudo apt-get update
-            sudo apt-get install -y bash-completion
+            $SUDO apt-get update
+            $SUDO apt-get install -y bash-completion
         fi
     elif command -v yum &> /dev/null; then
         if ! rpm -q bash-completion &> /dev/null; then
-            sudo yum install -y bash-completion
+            $SUDO yum install -y bash-completion
+        fi
+    elif command -v dnf &> /dev/null; then
+        if ! rpm -q bash-completion &> /dev/null; then
+            $SUDO dnf install -y bash-completion
         fi
     elif command -v brew &> /dev/null; then
         if ! brew list bash-completion &> /dev/null; then
             brew install bash-completion
         fi
     else
-        echo "${RED}ERROR: ${RESET}Unsupported package manager. Please install bash-completion manually."
+        error "Unsupported package manager. Please install bash-completion manually."
         exit 1
     fi
 }
 
-check_kubectl_installed() {
-    if ! command -v kubectl &>/dev/null; then
-        echo "${BLUE}INFO: ${RESET}kubectl is not installed."
+check_tool_installed() {
+    if command -v "$1" &>/dev/null; then
+        info "$1 is already installed."
         return 0
-    else
-        echo "${BLUE}INFO: ${RESET}kubectl is already installed. Run 'kubectl version --output=yaml' for more information."
-        return 1
     fi
+
+    return 1
 }
 
-install_kubectl_linux() {
-    echo "${BLUE}INFO: ${RESET}Installing kubectl..."
-    ARCH=$(uname -m)
-    if [ "$ARCH" == "x86_64" ]; then
-        ARCH="amd64"
-    elif [ "$ARCH" == "aarch64" ]; then
-        ARCH="arm64"
-    else
-        echo "${RED}ERROR: ${RESET}Unsupported architecture: $ARCH"
-        exit 1
+install_binary() {
+    local binary_path="$1"
+    local binary_name="$2"
+
+    $SUDO install -m 0755 "$binary_path" "/usr/local/bin/$binary_name"
+}
+
+install_kubectl() {
+    if check_tool_installed kubectl; then
+        return
     fi
 
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/$ARCH/kubectl"
+    local os arch
+    os=$(detect_os)
+    arch=$(detect_arch)
+
+    info "Installing kubectl..."
+    curl -fsSLO "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/${os}/${arch}/kubectl"
     chmod +x kubectl
-    sudo mv kubectl /usr/local/bin/
-
-    echo "${BLUE}INFO: ${RESET}Please ensure you have bash-completion installed in your Linux environment."
+    install_binary "./kubectl" "kubectl"
+    rm -f kubectl
 }
 
-install_kubectl_macos() {
-    echo "${BLUE}INFO: ${RESET}Installing kubectl..."
-    ARCH=$(uname -m)
-    if [ "$ARCH" == "x86_64" ]; then
-        ARCH="amd64"
-    elif [ "$ARCH" == "arm64" ]; then
-        ARCH="arm64"
-    else
-        echo "${RED}ERROR: ${RESET}Unsupported architecture: $ARCH"
+install_helm() {
+    if check_tool_installed helm; then
+        return
+    fi
+
+    local os arch version tmp_dir
+    os=$(detect_os)
+    arch=$(detect_arch)
+
+    version=$(curl -fsSL https://api.github.com/repos/helm/helm/releases/latest | grep -m1 '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+    if [ -z "$version" ]; then
+        error "Failed to determine latest Helm version."
         exit 1
     fi
 
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/darwin/$ARCH/kubectl"
-    chmod +x kubectl
-    sudo mv kubectl /usr/local/bin/
-
-    echo "${BLUE}INFO: ${RESET}Please ensure you have bash-completion installed in your macOS environment."
+    info "Installing helm v${version}..."
+    tmp_dir=$(mktemp -d)
+    curl -fsSL "https://get.helm.sh/helm-v${version}-${os}-${arch}.tar.gz" -o "${tmp_dir}/helm.tar.gz"
+    tar -xzf "${tmp_dir}/helm.tar.gz" -C "$tmp_dir"
+    install_binary "${tmp_dir}/${os}-${arch}/helm" "helm"
+    rm -rf "$tmp_dir"
 }
 
-install_kubectl_wsl() {
-    echo "${BLUE}INFO: ${RESET}Installing kubectl..."
-    ARCH=$(uname -m)
-    if [ "$ARCH" == "x86_64" ]; then
-        ARCH="amd64"
-    elif [ "$ARCH" == "aarch64" ]; then
-        ARCH="arm64"
-    else
-        echo "${RED}ERROR: ${RESET}Unsupported architecture: $ARCH"
+install_kustomize() {
+    if check_tool_installed kustomize; then
+        return
+    fi
+
+    local os arch version tmp_dir
+    os=$(detect_os)
+    arch=$(detect_arch)
+
+    version=$(curl -fsSL https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest | grep -m1 '"tag_name":' | sed -E 's/.*"kustomize\/([^"]+)".*/\1/')
+    if [ -z "$version" ]; then
+        error "Failed to determine latest Kustomize version."
         exit 1
     fi
 
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/windows/$ARCH/kubectl.exe"
-    chmod +x kubectl.exe
-    sudo mv kubectl.exe /usr/local/bin/
+    info "Installing kustomize ${version}..."
+    tmp_dir=$(mktemp -d)
+    curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${version}/kustomize_${version}_${os}_${arch}.tar.gz" -o "${tmp_dir}/kustomize.tar.gz"
+    tar -xzf "${tmp_dir}/kustomize.tar.gz" -C "$tmp_dir"
+    install_binary "${tmp_dir}/kustomize" "kustomize"
+    rm -rf "$tmp_dir"
+}
 
-    echo "${BLUE}INFO: ${RESET}Please ensure you have bash-completion installed in your WSL environment."
+configure_tool_completion() {
+    local shell_rc="$1"
+    local shell_type="$2"
+    local tool="$3"
+
+    if ! command -v "$tool" >/dev/null 2>&1; then
+        return
+    fi
+
+    if [ "$shell_type" = "zsh" ]; then
+        append_if_missing "source <($tool completion zsh)" "$shell_rc"
+    elif [ "$shell_type" = "bash" ]; then
+        append_if_missing "source <($tool completion bash)" "$shell_rc"
+    fi
+}
+
+configure_kubectl_short_alias_completion() {
+    local shell_rc="$1"
+    local shell_type="$2"
+
+    if [ "$shell_type" = "zsh" ]; then
+        append_if_missing "alias k=kubectl" "$shell_rc"
+        append_if_missing "compdef __start_kubectl k" "$shell_rc"
+    elif [ "$shell_type" = "bash" ]; then
+        append_if_missing "alias k=kubectl" "$shell_rc"
+        append_if_missing "complete -o default -F __start_kubectl k" "$shell_rc"
+    fi
+}
+
+enable_cli_autocompletion() {
+    local shell_rc shell_type
+
+    if [[ "$SHELL" == *"zsh"* ]]; then
+        shell_type="zsh"
+        shell_rc="$HOME/.zshrc"
+        append_if_missing "autoload -Uz compinit" "$shell_rc"
+        append_if_missing "compinit" "$shell_rc"
+    elif [[ "$SHELL" == *"bash"* ]]; then
+        shell_type="bash"
+        shell_rc="$HOME/.bashrc"
+        install_bash_completion
+    else
+        error "Unsupported shell. Please configure autocompletion manually."
+        return
+    fi
+
+    info "Configuring kubectl, helm and kustomize autocompletion for ${shell_type}..."
+    configure_tool_completion "$shell_rc" "$shell_type" kubectl
+    configure_tool_completion "$shell_rc" "$shell_type" helm
+    configure_tool_completion "$shell_rc" "$shell_type" kustomize
+    configure_kubectl_short_alias_completion "$shell_rc" "$shell_type"
+
+    info "Reload your shell config to use completion: source ${shell_rc}"
 }
 
 install_kc_kn() {
-    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+    local script_dir
+    script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-    if [ -f "${SCRIPT_DIR}/kc.sh" ] && [ -f "${SCRIPT_DIR}/kn.sh" ]; then
-        sudo rm -f /usr/local/bin/kn /usr/local/bin/kc
-        chmod +x "${SCRIPT_DIR}/kc.sh" "${SCRIPT_DIR}/kn.sh"
-        sudo cp -f "${SCRIPT_DIR}/kc.sh" /usr/local/bin/kc
-        sudo cp -f "${SCRIPT_DIR}/kn.sh" /usr/local/bin/kn
+    if [ -f "${script_dir}/kc.sh" ] && [ -f "${script_dir}/kn.sh" ]; then
+        $SUDO rm -f /usr/local/bin/kn /usr/local/bin/kc
+        chmod +x "${script_dir}/kc.sh" "${script_dir}/kn.sh"
+        $SUDO cp -f "${script_dir}/kc.sh" /usr/local/bin/kc
+        $SUDO cp -f "${script_dir}/kn.sh" /usr/local/bin/kn
 
-        echo "${BLUE}INFO: ${RESET}kc and kn aliases are installed."
+        info "kc and kn aliases are installed."
     else
-        echo "${BLUE}INFO: ${RESET}Downloading 'kc.sh' and 'kn.sh' from repository..."
-        curl -sL "https://github.com/nh4ttruong/kubekit/raw/main/kc.sh" -o kc.sh
-        curl -sL "https://github.com/nh4ttruong/kubekit/raw/main/kn.sh" -o kn.sh
+        info "Downloading kc.sh and kn.sh from repository..."
+        curl -fsSL "https://github.com/nh4ttruong/kubekit/raw/main/kc.sh" -o kc.sh
+        curl -fsSL "https://github.com/nh4ttruong/kubekit/raw/main/kn.sh" -o kn.sh
         chmod +x kc.sh kn.sh
-        sudo mv kc.sh /usr/local/bin/kc
-        sudo mv kn.sh /usr/local/bin/kn
+        $SUDO mv kc.sh /usr/local/bin/kc
+        $SUDO mv kn.sh /usr/local/bin/kn
     fi
 }
-
-enable_kubectl_autocompletion() {
-    install_bash_completion
-    
-    alias_exists() {
-        alias "$1" &>/dev/null
-    }
-
-    if [[ "$SHELL" == *"zsh"* ]]; then
-        echo "${BLUE}INFO: ${RESET}Configuring kubectl autocompletion for zsh..."
-        if ! grep -q "autoload -Uz compinit" ~/.zshrc; then
-            echo 'autoload -Uz compinit' >>~/.zshrc
-            echo 'compinit' >>~/.zshrc
-        fi
-        if ! grep -q "source <(kubectl completion zsh)" ~/.zshrc; then
-            echo 'source <(kubectl completion zsh)' >>~/.zshrc
-        fi
-        if ! alias_exists k; then
-            echo 'alias k=kubectl' >>~/.zshrc
-            echo 'compdef __start_kubectl k' >>~/.zshrc
-        fi
-        source ~/.zshrc
-    elif [[ "$SHELL" == *"bash"* ]]; then
-        echo "${BLUE}INFO: ${RESET}Configuring kubectl autocompletion for bash..."
-        if ! grep -q "source <(kubectl completion bash)" ~/.bashrc; then
-            echo 'source <(kubectl completion bash)' >>~/.bashrc
-        fi
-        if ! alias_exists k; then
-            echo 'alias k=kubectl' >>~/.bashrc
-            echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
-        fi
-        source ~/.bashrc
-    else
-        echo "${RED}ERR: ${RESET}Unsupported shell. Please configure autocompletion manually."
-    fi
-}
-
 
 enable_kc_kn_autocompletion() {
-    # Autocompletion setup for CURL method
+    local shell_rc script_dir
+    script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
     if [[ "$SHELL" == *"bash"* ]]; then
-        echo "${BLUE}INFO: ${RESET}Configuring kc & kn autocompletion for bash..."
-        sudo curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_bash_kn -o /etc/bash_completion.d/_kn
-        sudo curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_bash_kc -o /etc/bash_completion.d/_kc
-        
-        # check if bash_completion is sourced in .bashrc
-        if ! grep -q "source /etc/bash_completion" ~/.bashrc; then
-            echo 'source /etc/bash_completion' >>~/.bashrc
-        fi
-        
-        source ~/.bashrc
-    elif [[ "$SHELL" == *"zsh"* ]]; then
-        echo "${BLUE}INFO: ${RESET}Configuring kc & kn autocompletion for zsh..."
-        sudo curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_zsh_kn -o /usr/local/share/zsh/site-functions/_kn
-        sudo curl -sL https://github.com/nh4ttruong/kubekit/raw/main/completion/_zsh_kc -o /usr/local/share/zsh/site-functions/_kc
-        
-        # check if fpath is set in .zshrc
-        if ! grep -q "fpath=($fpath /usr/local/share/zsh/site-functions)" ~/.zshrc; then
-            echo 'fpath=($fpath /usr/local/share/zsh/site-functions)' >>~/.zshrc
+        info "Configuring kc & kn autocompletion for bash..."
+        if [ -f "${script_dir}/completion/_bash_kn" ] && [ -f "${script_dir}/completion/_bash_kc" ]; then
+            $SUDO cp -f "${script_dir}/completion/_bash_kn" /etc/bash_completion.d/_kn
+            $SUDO cp -f "${script_dir}/completion/_bash_kc" /etc/bash_completion.d/_kc
+        else
+            $SUDO curl -fsSL https://github.com/nh4ttruong/kubekit/raw/main/completion/_bash_kn -o /etc/bash_completion.d/_kn
+            $SUDO curl -fsSL https://github.com/nh4ttruong/kubekit/raw/main/completion/_bash_kc -o /etc/bash_completion.d/_kc
         fi
 
-        autoload -Uz compinit && compinit
-        source ~/.zshrc
+        shell_rc="$HOME/.bashrc"
+        append_if_missing "source /etc/bash_completion" "$shell_rc"
+        info "Reload your shell config to use completion: source ${shell_rc}"
+    elif [[ "$SHELL" == *"zsh"* ]]; then
+        info "Configuring kc & kn autocompletion for zsh..."
+        $SUDO mkdir -p /usr/local/share/zsh/site-functions
+
+        if [ -f "${script_dir}/completion/_zsh_kn" ] && [ -f "${script_dir}/completion/_zsh_kc" ]; then
+            $SUDO cp -f "${script_dir}/completion/_zsh_kn" /usr/local/share/zsh/site-functions/_kn
+            $SUDO cp -f "${script_dir}/completion/_zsh_kc" /usr/local/share/zsh/site-functions/_kc
+        else
+            $SUDO curl -fsSL https://github.com/nh4ttruong/kubekit/raw/main/completion/_zsh_kn -o /usr/local/share/zsh/site-functions/_kn
+            $SUDO curl -fsSL https://github.com/nh4ttruong/kubekit/raw/main/completion/_zsh_kc -o /usr/local/share/zsh/site-functions/_kc
+        fi
+
+        shell_rc="$HOME/.zshrc"
+        append_if_missing 'fpath=($fpath /usr/local/share/zsh/site-functions)' "$shell_rc"
+        info "Reload your shell config to use completion: source ${shell_rc}"
     else
-        echo "${RED}ERROR: ${RESET}Unsupported shell. Please configure autocompletion manually."
+        error "Unsupported shell. Please configure autocompletion manually."
     fi
+}
+
+usage() {
+    cat <<'USAGE'
+Usage: ./install.sh [options]
+
+Options:
+  -a, --alias    Install kc/kn shortcuts and their completion
+  -h, --help     Show this help message
+USAGE
 }
 
 main() {
-    INSTALL_KUBECTL=true
-    INSTALL_KC_KN=false
+    local install_kc_kn_alias=false
 
-    if ! check_kubectl_installed; then
-        INSTALL_KUBECTL=false
-    fi
-
-    # Parse command-line options
     while [[ $# -gt 0 ]]; do
-        key="$1"
-        case $key in
+        case "$1" in
             -a|--alias)
-            INSTALL_KC_KN=true
-            shift
-            ;;
+                install_kc_kn_alias=true
+                shift
+                ;;
+            -h|--help)
+                usage
+                exit 0
+                ;;
             *)
-            echo "Unknown option: $key"
-            exit 1
-            ;;
+                echo "Unknown option: $1"
+                usage
+                exit 1
+                ;;
         esac
     done
 
-    if [ "$INSTALL_KUBECTL" = true ]; then
-        case "$(uname -s)" in
-            Linux*)
-                install_kubectl_linux
-                ;;
-            Darwin*)
-                install_kubectl_macos
-                ;;
-            MINGW*|CYGWIN*|MSYS*) 
-                echo "${BLUE}INFO: ${RESET}Please ensure you have bash-completion installed in your WSL environment."
-                install_kubectl_wsl 
-                ;;
-            *)          
-                echo "${RED}ERROR: ${RESET}Unsupported OS. Please install kubectl manually." 
-                ;;
-        esac
-    fi
+    install_kubectl
+    install_helm
+    install_kustomize
+    enable_cli_autocompletion
 
-    # default enable_kubectl_autocompletion
-    enable_kubectl_autocompletion
-
-    if [ "$INSTALL_KC_KN" = true ]; then
+    if [ "$install_kc_kn_alias" = true ]; then
         install_kc_kn
         enable_kc_kn_autocompletion
     fi

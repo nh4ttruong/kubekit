@@ -1,10 +1,12 @@
 # KubeKit - Fast Kubernetes CLI operations
 
-Managing Kubernetes clusters, contexts, and namespaces can be time-consuming. But fear not! I’ve got you covered with three KubeKit smart tools: `k`, `kc`, and `kn`. These tools will streamline your workflow and make your life easier.
+Managing Kubernetes clusters, contexts, and namespaces can be time-consuming. But fear not! I’ve got you covered with KubeKit smart tools: `kubectl` (with `k` alias), `helm`, `kustomize`, `kc`, and `kn`. These tools will streamline your workflow and make your life easier.
 
 ## Features
 
 - `k` or `kubectl`: The official `kubectl` tool made by [Official Kubernetes](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/), you also could use `k` as its short version. They come with intelligent auto-completion! Just hit <TAB> to see the magic happen.
+- `helm`: Kubernetes package manager with shell auto-completion.
+- `kustomize`: Native Kubernetes configuration customization tool with shell auto-completion.
 - `kc`: Easily to switch between cluster contexts with a shorter alias `kc`. Type `kc` instead of the full command to get all contexts with current highlighting context. 
 - `kn`: Need to get all namepsaces or switch between cluster namespaces? No problem! `kn` is your fast lane.
 
@@ -12,11 +14,11 @@ Managing Kubernetes clusters, contexts, and namespaces can be time-consuming. Bu
 
 To install KubeKit, follow these steps:
 
-1. Install `kubectl` only:
+1. Install core CLI tools (`kubectl`, `helm`, `kustomize`) with auto-completion:
 ```bash
 curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash
 ```
-2. Install `kubectl` with `kc` (context) and `kn` (namespace) aliases operations:
+2. Install core CLI tools plus `kc` (context) and `kn` (namespace) aliases operations:
 - Linux (bash):
 ```bash
 curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- -a
@@ -32,13 +34,16 @@ cd kubekit
 bash ./install.sh -a
 ```
 
-The `-a` or `--alias` option is optional and allows you to install quick aliases for context `kc` and namespace `kn` operations.
+The installer automatically installs missing `kubectl`, `helm`, and `kustomize` binaries on Linux/macOS and configures shell completion for them.  
+The `-a` or `--alias` option is optional and allows you to install quick aliases for context `kc` and namespace `kn` operations, including their completion scripts.
 
 ## Usage
 
 Once installed, you can use KubeKit to enhance your Kubernetes workflow:
 
-- Use `k` as short version of `kubectl`:
+- Use `k` as short version of `kubectl`
+- Use `helm` for chart/package operations
+- Use `kustomize` for manifest customization
 - Use `kc` to manage Kubernetes contexts:
   - `kc`: List available contexts
   - `kc <context-name>`: Switch to the specified context
