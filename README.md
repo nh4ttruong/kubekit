@@ -4,7 +4,7 @@ Managing Kubernetes clusters, contexts, and namespaces can be time-consuming. Bu
 
 ## Motivation
 
-I built KubeKit because preparing a Kubernetes-ready local environment was more complex than it should be. Installing required tools, setting up completions, and wiring shortcuts for daily operations took too many repetitive steps. KubeKit wraps that setup into one installer so you can start operating clusters faster.
+There are many awesome Kubernetes tools like [kubectx](https://github.com/ahmetb/kubectx) and [k9s](https://k9scli.io/). I built KubeKit for a simpler path: keep a traditional CLI workflow, reduce setup complexity, and make daily Kubernetes operations fast and efficient.
 
 ## Usage
 
