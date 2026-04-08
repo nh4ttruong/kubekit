@@ -24,35 +24,44 @@ For more information on KubeKit usage, refer to run `kc -h` and `kn -h` for help
 
 ## Installation
 
-To install KubeKit, follow these steps:
-
-1. Install everything (core CLI tools + aliases `k`, `kc`, `kn`) with auto-completion:
+Install everything (core CLI tools + aliases `k`, `kc`, `kn`) with auto-completion for Linux:
 ```bash
 curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash
 ```
-2. macOS (zsh):
+
+For macOS, please using `zsh` instead:
 ```zsh
 curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo zsh
 ```
-3. Install only core CLI tools (skip aliases `k`, `kc`, `kn`):
-```bash
-curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- --no-aliases
-```
-4. Skip specific tools when needed:
-```bash
-curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- --no-kubectl
-curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- --no-helm --no-kustomize
-```
-5. Manual install from repository:
+
+### Options
+- Install only core CLI tools (skip aliases `k`, `kc`, `kn`):
+  ```bash
+  curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- --no-aliases
+  ```
+
+- Skip specific tools when needed:
+  ```bash
+  curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- --no-kubectl
+  curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- --no-helm --no-kustomize
+  ```
+
+- Update version for specific tool:
+  ```bash
+  curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- --update <tool> # kubectl, helm, kustomize
+  ```
+
+### Manual
+Manual install from repository:
 ```bash
 git clone https://github.com/nh4ttruong/kubekit.git
 cd kubekit
 bash ./install.sh
 ```
 
-The installer automatically installs missing `kubectl`, `helm`, and `kustomize` binaries on Linux/macOS and configures shell completion for them.  
-By default, aliases `k`, `kc`, and `kn` are installed with their completion setup.  
-Use `--no-aliases` to skip alias setup entirely.
+> [!NOTE]  
+> The installer automatically installs missing `kubectl`, `helm`, and `kustomize` binaries on Linux/macOS and configures shell completion for them.  
+> By default, aliases `k`, `kc`, and `kn` are installed with their completion setup.  
 
 ## Features
 
@@ -75,6 +84,3 @@ Contributions are welcome! If you have any suggestions, feature requests, or bug
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
----
-[@nh4ttruong](https://github.com/nh4ttruong)
