@@ -193,7 +193,7 @@ install_kustomize() {
         return
     fi
 
-    local os arch version tmp_dir
+    local os arch version kustomize_tag_prefix kustomize_tag kustomize_archive tmp_dir
     os=$(detect_os)
     arch=$(detect_arch)
 
@@ -202,15 +202,21 @@ install_kustomize() {
     else
         version=$(extract_json_tag_name "https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest")
         version=${version#kustomize/}
+        version=$(normalize_version "$version")
     fi
     if [ -z "$version" ] || ! validate_version "$version"; then
         error "Failed to determine latest Kustomize version."
         exit 1
     fi
 
+    # Kustomize release tags are formatted as "kustomize/vX.Y.Z"; the slash must be URL-encoded.
+    kustomize_tag_prefix="kustomize%2Fv"
+    kustomize_tag="${kustomize_tag_prefix}${version}"
+    kustomize_archive="kustomize_v${version}_${os}_${arch}.tar.gz"
+
     info "Installing kustomize ${version}..."
     tmp_dir=$(mktemp -d)
-    curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${version}/kustomize_${version}_${os}_${arch}.tar.gz" -o "${tmp_dir}/kustomize.tar.gz"
+    curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/${kustomize_tag}/${kustomize_archive}" -o "${tmp_dir}/kustomize.tar.gz"
     tar -xzf "${tmp_dir}/kustomize.tar.gz" -C "$tmp_dir"
     install_binary "${tmp_dir}/kustomize" "kustomize"
     rm -rf "$tmp_dir"
@@ -331,6 +337,74 @@ enable_kc_kn_autocompletion() {
     fi
 }
 
+get_tool_version() {
+    local tool="$1"
+    local version=""
+    local raw=""
+
+    case "$tool" in
+        kubectl)
+            version=$(kubectl version --client -o yaml 2>/dev/null | awk '/gitVersion:/ {print $2; exit}')
+            if [ -z "$version" ]; then
+                raw=$(kubectl version --client=true 2>/dev/null)
+                version=$(echo "$raw" | sed -n 's/.*GitVersion:"\([^"]*\)".*/\1/p' | head -n1)
+            fi
+            if [ -z "$version" ]; then
+                version=$(kubectl version --client --short 2>/dev/null | awk '{print $3}' | head -n1)
+            fi
+            ;;
+        helm)
+            version=$(helm version --template='{{.Version}}' 2>/dev/null)
+            if [ -z "$version" ]; then
+                raw=$(helm version 2>/dev/null)
+                version=$(echo "$raw" | sed -n 's/.*Version:"\([^"]*\)".*/\1/p' | head -n1)
+            fi
+            if [ -z "$version" ]; then
+                version=$(helm version --short 2>/dev/null | head -n1)
+            fi
+            ;;
+        kustomize)
+            version=$(kustomize version --short 2>/dev/null | head -n1)
+            if [ -z "$version" ]; then
+                raw=$(kustomize version 2>/dev/null | tr -d '{}')
+                version=$(echo "$raw" | sed -n 's/.*\(v[0-9][0-9A-Za-z.\-]*\).*/\1/p' | head -n1)
+            fi
+            if [ -z "$version" ]; then
+                version=$(kustomize version 2>/dev/null | awk '{print $1}' | head -n1)
+            fi
+            ;;
+        *)
+            version="-"
+            ;;
+    esac
+
+    if [ -z "$version" ]; then
+        version="unknown"
+    fi
+
+    echo "$version"
+}
+
+print_tools_summary() {
+    local tool installed version
+    local tools=("kubectl" "helm" "kustomize" "kc" "kn")
+
+    info "Installed tools summary:"
+    printf "%-12s %-10s %s\n" "Tool" "Installed" "Version"
+    printf "%-12s %-10s %s\n" "------------" "----------" "------------------------------"
+
+    for tool in "${tools[@]}"; do
+        if command -v "$tool" >/dev/null 2>&1; then
+            installed="yes"
+            version=$(get_tool_version "$tool")
+        else
+            installed="no"
+            version="-"
+        fi
+        printf "%-12s %-10s %s\n" "$tool" "$installed" "$version"
+    done
+}
+
 usage() {
     cat <<'USAGE'
 Usage: ./install.sh [options]
@@ -446,6 +520,7 @@ main() {
                 exit 1
                 ;;
         esac
+        print_tools_summary
         exit 0
     fi
 
@@ -468,6 +543,8 @@ main() {
         install_kc_kn
         enable_kc_kn_autocompletion
     fi
+
+    print_tools_summary
 }
 
 main "$@"
