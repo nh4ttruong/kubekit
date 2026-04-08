@@ -311,12 +311,18 @@ Usage: ./install.sh [options]
 Options:
   -a, --alias      Install aliases (default behavior; flag retained for compatibility)
       --no-aliases Skip alias setup for kc/kn and kubectl short alias k
+      --no-kubectl Skip kubectl installation
+      --no-helm    Skip helm installation
+      --no-kustomize Skip kustomize installation
   -h, --help       Show this help message
 USAGE
 }
 
 main() {
     local install_aliases=true
+    local install_kubectl_tool=true
+    local install_helm_tool=true
+    local install_kustomize_tool=true
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -326,6 +332,18 @@ main() {
                 ;;
             --no-aliases)
                 install_aliases=false
+                shift
+                ;;
+            --no-kubectl)
+                install_kubectl_tool=false
+                shift
+                ;;
+            --no-helm)
+                install_helm_tool=false
+                shift
+                ;;
+            --no-kustomize)
+                install_kustomize_tool=false
                 shift
                 ;;
             -h|--help)
@@ -340,9 +358,15 @@ main() {
         esac
     done
 
-    install_kubectl
-    install_helm
-    install_kustomize
+    if [ "$install_kubectl_tool" = true ]; then
+        install_kubectl
+    fi
+    if [ "$install_helm_tool" = true ]; then
+        install_helm
+    fi
+    if [ "$install_kustomize_tool" = true ]; then
+        install_kustomize
+    fi
     if [ "$install_aliases" = true ]; then
         enable_cli_autocompletion
     else
