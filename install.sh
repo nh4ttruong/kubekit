@@ -219,7 +219,7 @@ configure_kubectl_short_alias_completion() {
 }
 
 enable_cli_autocompletion() {
-    local shell_rc shell_type
+    local shell_rc shell_type install_k_short_alias="${1:-true}"
 
     if [[ "$SHELL" == *"zsh"* ]]; then
         shell_type="zsh"
@@ -239,7 +239,9 @@ enable_cli_autocompletion() {
     configure_tool_completion "$shell_rc" "$shell_type" kubectl
     configure_tool_completion "$shell_rc" "$shell_type" helm
     configure_tool_completion "$shell_rc" "$shell_type" kustomize
-    configure_kubectl_short_alias_completion "$shell_rc" "$shell_type"
+    if [ "$install_k_short_alias" = true ]; then
+        configure_kubectl_short_alias_completion "$shell_rc" "$shell_type"
+    fi
 
     info "Reload your shell config to use completion: source ${shell_rc}"
 }
@@ -307,18 +309,23 @@ usage() {
 Usage: ./install.sh [options]
 
 Options:
-  -a, --alias    Install kc/kn shortcuts and their completion
-  -h, --help     Show this help message
+  -a, --alias      Install aliases (default behavior; flag retained for compatibility)
+      --no-aliases Skip alias setup for kc/kn and kubectl short alias k
+  -h, --help       Show this help message
 USAGE
 }
 
 main() {
-    local install_kc_kn_alias=false
+    local install_aliases=true
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -a|--alias)
-                install_kc_kn_alias=true
+                install_aliases=true
+                shift
+                ;;
+            --no-aliases)
+                install_aliases=false
                 shift
                 ;;
             -h|--help)
@@ -336,9 +343,13 @@ main() {
     install_kubectl
     install_helm
     install_kustomize
-    enable_cli_autocompletion
+    if [ "$install_aliases" = true ]; then
+        enable_cli_autocompletion
+    else
+        enable_cli_autocompletion false
+    fi
 
-    if [ "$install_kc_kn_alias" = true ]; then
+    if [ "$install_aliases" = true ]; then
         install_kc_kn
         enable_kc_kn_autocompletion
     fi

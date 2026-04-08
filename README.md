@@ -14,28 +14,28 @@ Managing Kubernetes clusters, contexts, and namespaces can be time-consuming. Bu
 
 To install KubeKit, follow these steps:
 
-1. Install core CLI tools (`kubectl`, `helm`, `kustomize`) with auto-completion:
+1. Install everything (core CLI tools + aliases `k`, `kc`, `kn`) with auto-completion:
 ```bash
 curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash
 ```
-2. Install core CLI tools plus `kc` (context) and `kn` (namespace) aliases operations:
-- Linux (bash):
-```bash
-curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- -a
-```
-- MacOS (zsh):
+2. MacOS (zsh):
 ```zsh
-curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo zsh -s -- -a
+curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo zsh
 ```
-3. Manual install from repository:
+3. Install only core CLI tools (skip aliases `k`, `kc`, `kn`):
+```bash
+curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- --no-aliases
+```
+4. Manual install from repository:
 ```bash
 git clone https://github.com/nh4ttruong/kubekit.git
 cd kubekit
-bash ./install.sh -a
+bash ./install.sh
 ```
 
 The installer automatically installs missing `kubectl`, `helm`, and `kustomize` binaries on Linux/macOS and configures shell completion for them.  
-The `-a` or `--alias` option is optional and allows you to install quick aliases for context `kc` and namespace `kn` operations, including their completion scripts.
+By default, aliases `k`, `kc`, and `kn` are installed with their completion setup.  
+Use `--no-aliases` to skip alias setup entirely.
 
 ## Usage
 
