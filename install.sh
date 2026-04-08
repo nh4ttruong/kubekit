@@ -98,6 +98,26 @@ install_binary() {
     $SUDO install -m 0755 "$binary_path" "/usr/local/bin/$binary_name"
 }
 
+extract_json_tag_name() {
+    local url="$1"
+    local raw
+
+    raw=$(curl -fsSL "$url")
+    if command -v jq >/dev/null 2>&1; then
+        echo "$raw" | jq -r '.tag_name // empty'
+    else
+        echo "$raw" | grep -m1 '"tag_name":' | sed -E 's/.*"tag_name":[[:space:]]*"([^"]+)".*/\1/'
+    fi
+}
+
+validate_version() {
+    local version="$1"
+    if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+        return 1
+    fi
+    return 0
+}
+
 install_kubectl() {
     if check_tool_installed kubectl; then
         return
@@ -123,8 +143,9 @@ install_helm() {
     os=$(detect_os)
     arch=$(detect_arch)
 
-    version=$(curl -fsSL https://api.github.com/repos/helm/helm/releases/latest | grep -m1 '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
-    if [ -z "$version" ]; then
+    version=$(extract_json_tag_name "https://api.github.com/repos/helm/helm/releases/latest")
+    version=${version#v}
+    if [ -z "$version" ] || ! validate_version "$version"; then
         error "Failed to determine latest Helm version."
         exit 1
     fi
@@ -146,8 +167,9 @@ install_kustomize() {
     os=$(detect_os)
     arch=$(detect_arch)
 
-    version=$(curl -fsSL https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest | grep -m1 '"tag_name":' | sed -E 's/.*"kustomize\/([^"]+)".*/\1/')
-    if [ -z "$version" ]; then
+    version=$(extract_json_tag_name "https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest")
+    version=${version#kustomize/}
+    if [ -z "$version" ] || ! validate_version "$version"; then
         error "Failed to determine latest Kustomize version."
         exit 1
     fi

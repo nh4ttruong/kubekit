@@ -8,7 +8,7 @@ Managing Kubernetes clusters, contexts, and namespaces can be time-consuming. Bu
 - `helm`: Kubernetes package manager with shell auto-completion.
 - `kustomize`: Native Kubernetes configuration customization tool with shell auto-completion.
 - `kc`: Easily to switch between cluster contexts with a shorter alias `kc`. Type `kc` instead of the full command to get all contexts with current highlighting context. 
-- `kn`: Need to get all namepsaces or switch between cluster namespaces? No problem! `kn` is your fast lane.
+- `kn`: Need to get all namespaces or switch between cluster namespaces? No problem! `kn` is your fast lane.
 
 ## Installation
 
