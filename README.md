@@ -59,7 +59,7 @@ Use `--no-aliases` to skip alias setup entirely.
 - `k` or `kubectl`: The official `kubectl` tool made by [Official Kubernetes](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/), you also could use `k` as its short version. They come with intelligent auto-completion! Just hit <TAB> to see the magic happen.
 - `helm`: Kubernetes package manager with shell auto-completion.
 - `kustomize`: Native Kubernetes configuration customization tool with shell auto-completion.
-- `kc`: Easily to switch between cluster contexts with a shorter alias `kc`. Type `kc` instead of the full command to get all contexts with current highlighting context. 
+- `kc`: Easily switch between cluster contexts with a shorter alias `kc`. Type `kc` instead of the full command to get all contexts with current highlighting context. 
 - `kn`: Need to get all namespaces or switch between cluster namespaces? No problem! `kn` is your fast lane.
 
 ## References
