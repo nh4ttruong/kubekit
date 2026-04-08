@@ -2,40 +2,9 @@
 
 Managing Kubernetes clusters, contexts, and namespaces can be time-consuming. But fear not! I’ve got you covered with KubeKit smart tools: `kubectl` (with `k` alias), `helm`, `kustomize`, `kc`, and `kn`. These tools will streamline your workflow and make your life easier.
 
-## Features
+## Motivation
 
-- `k` or `kubectl`: The official `kubectl` tool made by [Official Kubernetes](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/), you also could use `k` as its short version. They come with intelligent auto-completion! Just hit <TAB> to see the magic happen.
-- `helm`: Kubernetes package manager with shell auto-completion.
-- `kustomize`: Native Kubernetes configuration customization tool with shell auto-completion.
-- `kc`: Easily to switch between cluster contexts with a shorter alias `kc`. Type `kc` instead of the full command to get all contexts with current highlighting context. 
-- `kn`: Need to get all namespaces or switch between cluster namespaces? No problem! `kn` is your fast lane.
-
-## Installation
-
-To install KubeKit, follow these steps:
-
-1. Install everything (core CLI tools + aliases `k`, `kc`, `kn`) with auto-completion:
-```bash
-curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash
-```
-2. MacOS (zsh):
-```zsh
-curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo zsh
-```
-3. Install only core CLI tools (skip aliases `k`, `kc`, `kn`):
-```bash
-curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- --no-aliases
-```
-4. Manual install from repository:
-```bash
-git clone https://github.com/nh4ttruong/kubekit.git
-cd kubekit
-bash ./install.sh
-```
-
-The installer automatically installs missing `kubectl`, `helm`, and `kustomize` binaries on Linux/macOS and configures shell completion for them.  
-By default, aliases `k`, `kc`, and `kn` are installed with their completion setup.  
-Use `--no-aliases` to skip alias setup entirely.
+There are many awesome Kubernetes tools like [kubectx](https://github.com/ahmetb/kubectx) and [k9s](https://k9scli.io/). I built KubeKit for a simpler path: keep a traditional CLI workflow, reduce setup complexity, and make daily Kubernetes operations fast and efficient.
 
 ## Usage
 
@@ -53,9 +22,51 @@ Once installed, you can use KubeKit to enhance your Kubernetes workflow:
 
 For more information on KubeKit usage, refer to run `kc -h` and `kn -h` for help.
 
-## Reference
-- [Official Kubernetes documentation](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
-- [kubectx](https://github.com/ahmetb/kubectx)
+## Installation
+
+To install KubeKit, follow these steps:
+
+1. Install everything (core CLI tools + aliases `k`, `kc`, `kn`) with auto-completion:
+```bash
+curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash
+```
+2. macOS (zsh):
+```zsh
+curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo zsh
+```
+3. Install only core CLI tools (skip aliases `k`, `kc`, `kn`):
+```bash
+curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- --no-aliases
+```
+4. Skip specific tools when needed:
+```bash
+curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- --no-kubectl
+curl -sL https://github.com/nh4ttruong/kubekit/raw/main/install.sh | sudo bash -s -- --no-helm --no-kustomize
+```
+5. Manual install from repository:
+```bash
+git clone https://github.com/nh4ttruong/kubekit.git
+cd kubekit
+bash ./install.sh
+```
+
+The installer automatically installs missing `kubectl`, `helm`, and `kustomize` binaries on Linux/macOS and configures shell completion for them.  
+By default, aliases `k`, `kc`, and `kn` are installed with their completion setup.  
+Use `--no-aliases` to skip alias setup entirely.
+
+## Features
+
+- `k` or `kubectl`: The official `kubectl` tool made by [Official Kubernetes](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/), you also could use `k` as its short version. They come with intelligent auto-completion! Just hit <TAB> to see the magic happen.
+- `helm`: Kubernetes package manager with shell auto-completion.
+- `kustomize`: Native Kubernetes configuration customization tool with shell auto-completion.
+- `kc`: Easily switch between cluster contexts with a shorter alias `kc`. Type `kc` instead of the full command to get all contexts with current highlighting context. 
+- `kn`: Need to get all namespaces or switch between cluster namespaces? No problem! `kn` is your fast lane.
+
+## References
+- [Kubernetes: Install and Set Up kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [Helm Documentation](https://helm.sh/docs/)
+- [Kustomize Documentation](https://kubectl.docs.kubernetes.io/installation/kustomize/)
+- [kubectx and kubens](https://github.com/ahmetb/kubectx)
 
 ## Contributing
 
