@@ -337,6 +337,52 @@ enable_kc_kn_autocompletion() {
     fi
 }
 
+get_tool_version() {
+    local tool="$1"
+    local version=""
+
+    case "$tool" in
+        kubectl)
+            version=$(kubectl version --client -o yaml 2>/dev/null | awk '/gitVersion:/ {print $2; exit}')
+            ;;
+        helm)
+            version=$(helm version --short 2>/dev/null)
+            ;;
+        kustomize)
+            version=$(kustomize version 2>/dev/null | tr -d '{}')
+            ;;
+        *)
+            version="-"
+            ;;
+    esac
+
+    if [ -z "$version" ]; then
+        version="unknown"
+    fi
+
+    echo "$version"
+}
+
+print_tools_summary() {
+    local tool installed version
+    local tools=("kubectl" "helm" "kustomize" "kc" "kn")
+
+    info "Installed tools summary:"
+    printf "%-12s %-10s %s\n" "Tool" "Installed" "Version"
+    printf "%-12s %-10s %s\n" "------------" "----------" "------------------------------"
+
+    for tool in "${tools[@]}"; do
+        if command -v "$tool" >/dev/null 2>&1; then
+            installed="yes"
+            version=$(get_tool_version "$tool")
+        else
+            installed="no"
+            version="-"
+        fi
+        printf "%-12s %-10s %s\n" "$tool" "$installed" "$version"
+    done
+}
+
 usage() {
     cat <<'USAGE'
 Usage: ./install.sh [options]
@@ -452,6 +498,7 @@ main() {
                 exit 1
                 ;;
         esac
+        print_tools_summary
         exit 0
     fi
 
@@ -474,6 +521,8 @@ main() {
         install_kc_kn
         enable_kc_kn_autocompletion
     fi
+
+    print_tools_summary
 }
 
 main "$@"
