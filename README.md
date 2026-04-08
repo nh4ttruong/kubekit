@@ -62,6 +62,7 @@ bash ./install.sh
 > [!NOTE]  
 > The installer automatically installs missing `kubectl`, `helm`, and `kustomize` binaries on Linux/macOS and configures shell completion for them.  
 > By default, aliases `k`, `kc`, and `kn` are installed with their completion setup.  
+> After each install/update run, the installer prints a summary table showing tool installation status and detected versions.  
 
 ## Features
 
