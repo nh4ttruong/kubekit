@@ -193,7 +193,7 @@ install_kustomize() {
         return
     fi
 
-    local os arch version tmp_dir
+    local os arch version kustomize_tag_prefix kustomize_tag kustomize_archive tmp_dir
     os=$(detect_os)
     arch=$(detect_arch)
 
@@ -202,15 +202,21 @@ install_kustomize() {
     else
         version=$(extract_json_tag_name "https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest")
         version=${version#kustomize/}
+        version=$(normalize_version "$version")
     fi
     if [ -z "$version" ] || ! validate_version "$version"; then
         error "Failed to determine latest Kustomize version."
         exit 1
     fi
 
+    # Kustomize release tags are formatted as "kustomize/vX.Y.Z"; the slash must be URL-encoded.
+    kustomize_tag_prefix="kustomize%2Fv"
+    kustomize_tag="${kustomize_tag_prefix}${version}"
+    kustomize_archive="kustomize_v${version}_${os}_${arch}.tar.gz"
+
     info "Installing kustomize ${version}..."
     tmp_dir=$(mktemp -d)
-    curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2F${version}/kustomize_${version}_${os}_${arch}.tar.gz" -o "${tmp_dir}/kustomize.tar.gz"
+    curl -fsSL "https://github.com/kubernetes-sigs/kustomize/releases/download/${kustomize_tag}/${kustomize_archive}" -o "${tmp_dir}/kustomize.tar.gz"
     tar -xzf "${tmp_dir}/kustomize.tar.gz" -C "$tmp_dir"
     install_binary "${tmp_dir}/kustomize" "kustomize"
     rm -rf "$tmp_dir"
